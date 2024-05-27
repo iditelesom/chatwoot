@@ -66,7 +66,11 @@ class Channel::Telegram < ApplicationRecord
   end
 
   def chat_id(message)
-    message.conversation[:additional_attributes]['chat_id']
+    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
+    encryptor = DeterministicEncryptor.new(secret)
+
+    encrypted_chat_id = message.conversation[:additional_attributes]['chat_id']
+    encryptor.decrypt(encrypted_chat_id)
   end
 
   def reply_to_message_id(message)
@@ -107,9 +111,9 @@ class Channel::Telegram < ApplicationRecord
       one_time_keyboard: true,
       inline_keyboard: message.content_attributes['items'].map do |item|
         [{
-          text: item['title'],
-          callback_data: item['value']
-        }]
+           text: item['title'],
+           callback_data: item['value']
+         }]
       end
     }.to_json
   end
@@ -125,7 +129,7 @@ class Channel::Telegram < ApplicationRecord
 
     # remove all html tags except b, strong, i, em, u, ins, s, strike, del, a, code, pre, blockquote
     stripped_html = Rails::HTML5::SafeListSanitizer.new.sanitize(html, tags: %w[b strong i em u ins s strike del a code pre blockquote],
-                                                                       attributes: %w[href])
+                                                                 attributes: %w[href])
 
     # converted escaped br tags to \n
     stripped_html.gsub('&lt;br&gt;', "\n")
