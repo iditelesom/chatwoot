@@ -78,7 +78,11 @@ class Channel::Telegram < ApplicationRecord
   end
 
   def chat_id(message)
-    message.conversation[:additional_attributes]['chat_id']
+    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
+    encryptor = DeterministicEncryptor.new(secret)
+
+    encrypted_chat_id = message.conversation[:additional_attributes]['chat_id']
+    encryptor.decrypt(encrypted_chat_id)
   end
 
   def reply_to_message_id(message)
