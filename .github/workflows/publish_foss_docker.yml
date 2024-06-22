@@ -12,7 +12,7 @@ on:
       - master
     tags:
       - v*
-# pull_request:
+  # pull_request:
   workflow_dispatch:
 
 jobs:
@@ -43,12 +43,12 @@ jobs:
         run: |
           # Replace forward slashes with hyphens in the ref name
           SANITIZED_REF=$(echo "$GIT_REF" | sed 's/\//-/g')
-          echo "DOCKER_TAG=chatwoot/chatwoot:$SANITIZED_REF-ce" >> $GITHUB_ENV
+          echo "DOCKER_TAG=iditelesom/chatwoot:$SANITIZED_REF-ce" >> $GITHUB_ENV
 
       - name: replace docker tag if master
         if: github.ref_name == 'master'
         run: |
-          echo "DOCKER_TAG=chatwoot/chatwoot:latest-ce" >> $GITHUB_ENV
+          echo "DOCKER_TAG=iditelesom/chatwoot:latest-ce" >> $GITHUB_ENV
 
       - name: Login to DockerHub
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
