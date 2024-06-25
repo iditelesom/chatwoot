@@ -4,7 +4,7 @@ class DeterministicEncryptor
   def initialize
     deterministic_key = Rails.application.config.active_record.encryption.deterministic_key
     if deterministic_key.nil?
-      raise ArgumentError, 
+      raise ArgumentError,
             "One or more encryption keys are not set or not loaded. " \
             "Check your Rails configuration and environment variables " \
             "for PRIMARY_KEY, DETERMINISTIC_KEY, and KEY_DERIVATION_SALT. " \
