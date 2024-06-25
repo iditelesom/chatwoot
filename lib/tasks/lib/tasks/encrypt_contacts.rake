@@ -14,8 +14,7 @@ namespace :populate do
     require 'digest/md5'
     require 'faker'
 
-    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
-    encryptor = DeterministicEncryptor.new(secret)
+    encryptor = DeterministicEncryptor.new
 
     Contact.find_each do |contact|
       Faker::Config.locale = 'ru'
