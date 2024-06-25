@@ -1,8 +1,9 @@
 require 'openssl'
 
 class DeterministicEncryptor
-  def initialize(secret)
-    @key = OpenSSL::Digest::SHA256.digest(secret)
+  def initialize
+    deterministic_key = Rails.application.config.active_record.encryption.deterministic_key
+    @key = OpenSSL::Digest::SHA256.digest(deterministic_key)
   end
 
   def encrypt(plain_text)
@@ -23,8 +24,7 @@ class DeterministicEncryptor
 end
 
 # Usage example
-secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
-encryptor = DeterministicEncryptor.new(secret)
+encryptor = DeterministicEncryptor.new
 
 plain_text = 'source_id_value'
 encrypted_text = encryptor.encrypt(plain_text)
