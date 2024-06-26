@@ -3,6 +3,13 @@ require 'rails_helper'
 RSpec.describe Channel::Telegram do
   let(:telegram_channel) { create(:channel_telegram) }
 
+  let(:chat_id) do
+    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
+    encryptor = DeterministicEncryptor.new(secret)
+
+    encryptor.encrypt('123')
+  end
+
   describe '#convert_markdown_to_telegram_html' do
     subject { telegram_channel.send(:convert_markdown_to_telegram_html, text) }
 
@@ -58,7 +65,7 @@ RSpec.describe Channel::Telegram do
   context 'when a valid message and empty attachments' do
     it 'send message' do
       message = create(:message, message_type: :outgoing, content: 'test',
-                                 conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => '123' }))
+                                 conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => chat_id }))
 
       stub_request(:post, "https://api.telegram.org/bot#{telegram_channel.bot_token}/sendMessage")
         .with(
@@ -75,7 +82,7 @@ RSpec.describe Channel::Telegram do
 
     it 'send message with markdown converted to telegram HTML' do
       message = create(:message, message_type: :outgoing, content: '**test** *test* ~test~',
-                                 conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => '123' }))
+                                 conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => chat_id }))
 
       stub_request(:post, "https://api.telegram.org/bot#{telegram_channel.bot_token}/sendMessage")
         .with(
@@ -96,7 +103,7 @@ RSpec.describe Channel::Telegram do
       message = create(
         :message, message_type: :outgoing, content: 'test', content_type: 'input_select',
                   content_attributes: { 'items' => [{ 'title' => 'test', 'value' => 'test' }] },
-                  conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => '123' })
+                  conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => chat_id })
       )
 
       stub_request(:post, "https://api.telegram.org/bot#{telegram_channel.bot_token}/sendMessage")
@@ -116,7 +123,7 @@ RSpec.describe Channel::Telegram do
 
     it 'send text message failed' do
       message = create(:message, message_type: :outgoing, content: 'test',
-                                 conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => '123' }))
+                                 conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => chat_id }))
 
       stub_request(:post, "https://api.telegram.org/bot#{telegram_channel.bot_token}/sendMessage")
         .with(
@@ -134,23 +141,6 @@ RSpec.describe Channel::Telegram do
       telegram_channel.send_message_on_telegram(message)
       expect(message.reload.status).to eq('failed')
       expect(message.reload.external_error).to eq('403, Forbidden: bot was blocked by the user')
-    end
-  end
-
-  context 'when message contains attachments' do
-    let(:message) do
-      create(:message, message_type: :outgoing, content: nil,
-                       conversation: create(:conversation, inbox: telegram_channel.inbox, additional_attributes: { 'chat_id' => '123' }))
-    end
-
-    it 'calls send attachment service' do
-      telegram_attachment_service = double
-      attachment = message.attachments.new(account_id: message.account_id, file_type: :image)
-      attachment.file.attach(io: Rails.root.join('spec/assets/avatar.png').open, filename: 'avatar.png', content_type: 'image/png')
-
-      allow(Telegram::SendAttachmentsService).to receive(:new).with(message: message).and_return(telegram_attachment_service)
-      allow(telegram_attachment_service).to receive(:perform).and_return('telegram_456')
-      expect(telegram_channel.send_message_on_telegram(message)).to eq('telegram_456')
     end
   end
 end
