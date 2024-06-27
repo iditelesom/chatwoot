@@ -65,3 +65,6 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ env.DOCKER_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
