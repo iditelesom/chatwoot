@@ -28,18 +28,44 @@ describe Telegram::IncomingMessageService do
       body: File.read('spec/assets/sample.pdf'),
       headers: {}
     )
+
+    Faker::Config.locale = 'ru'
   end
 
   let!(:telegram_channel) { create(:channel_telegram) }
+
+  let(:from_id) { 23 }
   let!(:message_params) do
     {
       'message_id' => 1,
       'from' => {
-        'id' => 23, 'is_bot' => false, 'first_name' => 'Sojan', 'last_name' => 'Jose', 'username' => 'sojan', 'language_code' => 'en'
+        'id' => from_id, 'is_bot' => false, 'first_name' => 'Sojan', 'last_name' => 'Jose', 'username' => 'sojan', 'language_code' => 'en'
       },
       'chat' => { 'id' => 23, 'first_name' => 'Sojan', 'last_name' => 'Jose', 'username' => 'sojan', 'type' => 'private' },
       'date' => 1_631_132_077
     }
+  end
+
+  let!(:name) do
+    Faker::Config.random = Random.new(Digest::MD5.hexdigest(from_id.to_s).to_i(16))
+
+    first_name = Faker::Name.male_first_name
+    last_name = Faker::Name.male_last_name
+
+    "#{first_name} #{last_name}"
+  end
+
+  let!(:username) do
+    Faker::Config.random = Random.new(Digest::MD5.hexdigest(from_id.to_s).to_i(16))
+
+    Faker::Internet.username
+  end
+
+  let(:social_telegram_user_id) do
+    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
+    encryptor = DeterministicEncryptor.new(secret)
+
+    encryptor.encrypt(from_id.to_s)
   end
 
   describe '#perform' do
@@ -51,7 +77,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.content).to eq('test')
       end
     end
@@ -64,9 +90,9 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
-        expect(Contact.all.first.additional_attributes['social_telegram_user_id']).to eq(23)
-        expect(Contact.all.first.additional_attributes['social_telegram_user_name']).to eq('sojan')
+        expect(Contact.all.first.name).to eq(name)
+        expect(Contact.all.first.additional_attributes['social_telegram_user_id']).to eq(social_telegram_user_id)
+        expect(Contact.all.first.additional_attributes['social_telegram_user_name']).to eq(username)
         expect(telegram_channel.inbox.messages.first.content).to eq('test')
       end
     end
@@ -106,9 +132,9 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
-        expect(Contact.all.first.additional_attributes['social_telegram_user_id']).to eq(23)
-        expect(Contact.all.first.additional_attributes['social_telegram_user_name']).to eq('sojan')
+        expect(Contact.all.first.name).to eq(name)
+        expect(Contact.all.first.additional_attributes['social_telegram_user_id']).to eq(social_telegram_user_id)
+        expect(Contact.all.first.additional_attributes['social_telegram_user_name']).to eq(username)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('audio')
       end
     end
@@ -127,7 +153,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('image')
       end
     end
@@ -152,7 +178,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('image')
       end
     end
@@ -174,7 +200,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('video')
       end
     end
@@ -193,7 +219,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('audio')
       end
     end
@@ -214,7 +240,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('file')
       end
     end
@@ -252,7 +278,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('location')
       end
 
@@ -271,7 +297,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
 
         attachment = telegram_channel.inbox.messages.first.attachments.first
         expect(attachment.file_type).to eq('location')
@@ -282,13 +308,15 @@ describe Telegram::IncomingMessageService do
     end
 
     context 'when valid callback_query params' do
+      let(:from_id) { 5_171_248 }
+
       it 'creates appropriate conversations, message and contacts' do
         params = {
           'update_id' => 2_342_342_343_242,
           'callback_query' => {
             'id' => '2342342309929423',
             'from' => {
-              'id' => 5_171_248,
+              'id' => from_id,
               'is_bot' => false,
               'first_name' => 'Sojan',
               'last_name' => 'Jose',
@@ -304,8 +332,8 @@ describe Telegram::IncomingMessageService do
 
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
-        expect(Contact.all.first.additional_attributes['social_telegram_user_id']).to eq(5_171_248)
+        expect(Contact.all.first.name).to eq(name)
+        expect(Contact.all.first.additional_attributes['social_telegram_user_id']).to eq(social_telegram_user_id)
         expect(telegram_channel.inbox.messages.first.content).to eq('Option 1')
       end
     end
