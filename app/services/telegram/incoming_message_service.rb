@@ -81,8 +81,9 @@ class Telegram::IncomingMessageService
   def contact_attributes
     {
       name: anonymize_name,
-      phone_number: anonymize_phone,
-      email: anonymize_email,
+      # Uncomment the following lines if you need to anonymize the contact's phone number and email
+      # phone_number: anonymize_phone,
+      # email: anonymize_email,
       additional_attributes: additional_attributes
     }
   end
@@ -90,8 +91,7 @@ class Telegram::IncomingMessageService
   def additional_attributes
     anonymized_username = anonymize_username
 
-    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
-    encryptor = DeterministicEncryptor.new(secret)
+    encryptor = DeterministicEncryptor.new
 
     {
       # TODO: Remove this once we show the social_telegram_user_name in the UI instead of the username
@@ -134,8 +134,7 @@ class Telegram::IncomingMessageService
   end
 
   def conversation_additional_attributes
-    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
-    encryptor = DeterministicEncryptor.new(secret)
+    encryptor = DeterministicEncryptor.new
 
     {
       chat_id: encryptor.encrypt(telegram_params_chat_id.to_s)

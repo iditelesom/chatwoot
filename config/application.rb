@@ -53,9 +53,9 @@ module Chatwoot
     # FIX ME : fixes breakage of installation config. we need to migrate.
     config.active_record.yaml_column_permitted_classes = [ActiveSupport::HashWithIndifferentAccess]
 
-    config.active_record.encryption.primary_key = Rails.application.credentials.dig(:encryption, :primary_key)
-    config.active_record.encryption.deterministic_key = Rails.application.credentials.dig(:encryption, :deterministic_key)
-    config.active_record.encryption.key_derivation_salt = Rails.application.credentials.dig(:encryption, :key_derivation_salt)
+    config.active_record.encryption.primary_key = ENV.fetch('PRIMARY_KEY') { raise "PRIMARY_KEY is not set in the environment" }
+    config.active_record.encryption.deterministic_key = ENV.fetch('DETERMINISTIC_KEY') { raise "DETERMINISTIC_KEY is not set in the environment" }
+    config.active_record.encryption.key_derivation_salt = ENV.fetch('KEY_DERIVATION_SALT') { raise "KEY_DERIVATION_SALT is not set in the environment" }
   end
 
   def self.config
