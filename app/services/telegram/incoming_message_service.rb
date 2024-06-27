@@ -106,8 +106,10 @@ class Telegram::IncomingMessageService
     Faker::Config.locale = 'ru'
     Faker::Config.random = Random.new(Digest::MD5.hexdigest(telegram_params_from_id.to_s).to_i(16))
 
-    first_name = Faker::Name.male_first_name
-    last_name = Faker::Name.male_last_name
+    gender = GenderDetector.new.detect_gender(telegram_params_first_name, telegram_params_last_name, telegram_params_username)
+
+    first_name = gender == 'female' ? Faker::Name.female_first_name : Faker::Name.male_first_name
+    last_name = gender == 'female' ? Faker::Name.female_last_name : Faker::Name.male_last_name
 
     "#{first_name} #{last_name}"
   end

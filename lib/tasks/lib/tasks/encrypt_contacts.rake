@@ -20,8 +20,17 @@ namespace :populate do
       Faker::Config.locale = 'ru'
       Faker::Config.random = Random.new(Digest::MD5.hexdigest(contact.id.to_s).to_i(16))
 
-      first_name = Faker::Name.male_first_name
-      last_name = Faker::Name.male_last_name
+      orig_full_name = contact.name || ''
+
+      parts = orig_full_name.strip.split(/\s+/, 2)
+      orig_first_name = parts[0]
+      orig_last_name = parts[1] || ''
+
+      telegram_username = contact.additional_attributes&['social_telegram_user_name'] || ''
+      gender = GenderDetector.new.detect_gender(orig_first_name, orig_last_name, telegram_username)
+
+      first_name = gender == 'female' ? Faker::Name.female_first_name : Faker::Name.male_first_name
+      last_name = gender == 'female' ? Faker::Name.female_last_name : Faker::Name.male_last_name
       username = Faker::Internet.username
       email = Faker::Internet.email
       phone_number = Faker::PhoneNumber.e164_phone_number
