@@ -44,6 +44,7 @@
 #        run: bundle exec rake assets:precompile
 #        env:
 #          RAILS_ENV: production
+#          NODE_OPTIONS: --openssl-legacy-provider
 #
 #      - name: Size Check
 #        run: pnpm run size
