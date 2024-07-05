@@ -1,8 +1,8 @@
 require 'openssl'
 
 class DeterministicEncryptor
-  def initialize
-    deterministic_key = Rails.application.config.active_record.encryption.deterministic_key
+  def initialize(deterministic_key = nil)
+    deterministic_key ||= Rails.application.config.active_record.encryption.deterministic_key
     if deterministic_key.nil?
       raise ArgumentError, 
             "One or more encryption keys are not set or not loaded. " \
