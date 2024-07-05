@@ -4,7 +4,7 @@ RSpec.describe Channel::Telegram do
   let(:telegram_channel) { create(:channel_telegram) }
 
   let(:chat_id) do
-    secret = Rails.application.credentials.dig(:encryption, :deterministic_key)
+    secret = ENV['DETERMINISTIC_KEY']
     encryptor = DeterministicEncryptor.new(secret)
 
     encryptor.encrypt('123')
