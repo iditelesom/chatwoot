@@ -26,6 +26,12 @@
             {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.LABEL') }}
           </label>
         </div>
+        <div class="w-full flex items-center gap-2">
+          <input v-model="isPrivate" type="checkbox" :value="isPrivate" />
+          <label for="conversation_creation">
+            {{ $t('TEAMS_SETTINGS.FORM.PRIVATE.LABEL') }}
+          </label>
+        </div>
         <div class="flex flex-row justify-end gap-2 py-2 px-0 w-full">
           <div class="w-full">
             <woot-submit-button
@@ -73,6 +79,7 @@ export default {
       description = '',
       name: title = '',
       allow_auto_assign: allowAutoAssign = true,
+      private: isPrivate = false,
     } = formData;
 
     return {
@@ -92,6 +99,7 @@ export default {
         description: this.description,
         name: this.title,
         allow_auto_assign: this.allowAutoAssign,
+        private: this.isPrivate,
       });
     },
   },
