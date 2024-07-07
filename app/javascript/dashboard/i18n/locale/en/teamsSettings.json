@@ -115,6 +115,9 @@
       "AUTO_ASSIGN": {
         "LABEL": "Allow auto assign for this team."
       },
+      "PRIVATE": {
+        "LABEL": "Conversations are only visible to team members."
+      },
       "SUBMIT_CREATE": "Create team"
     }
   }

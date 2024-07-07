@@ -24,9 +24,10 @@ class Conversations::FilterService < FilterService
   end
 
   def base_relation
-    @account.conversations.includes(
+    conversations = @account.conversations.includes(
       :taggings, :inbox, { assignee: { avatar_attachment: [:blob] } }, { contact: { avatar_attachment: [:blob] } }, :team, :messages, :contact_inbox
     )
+    TeamFilter.new(conversations, @user, @account).filter
   end
 
   def current_page

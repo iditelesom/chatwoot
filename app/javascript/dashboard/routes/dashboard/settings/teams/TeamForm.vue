@@ -35,6 +35,7 @@ export default {
       description = '',
       name: title = '',
       allow_auto_assign: allowAutoAssign = true,
+      private: isPrivate = false,
     } = formData;
 
     const state = reactive({
@@ -57,6 +58,7 @@ export default {
         description: this.state.description,
         name: this.state.title,
         allow_auto_assign: this.state.allowAutoAssign,
+        private: this.state.isPrivate,
       });
     },
   },
@@ -92,6 +94,12 @@ export default {
         <input v-model="state.allowAutoAssign" type="checkbox" :value="true" />
         <label for="conversation_creation">
           {{ $t('TEAMS_SETTINGS.FORM.AUTO_ASSIGN.LABEL') }}
+        </label>
+      </div>
+      <div class="w-full flex items-center gap-2">
+        <input v-model="state.isPrivate" type="checkbox" :value="isPrivate" />
+        <label for="conversation_creation">
+          {{ $t('TEAMS_SETTINGS.FORM.PRIVATE.LABEL') }}
         </label>
       </div>
       <div class="flex flex-row justify-end gap-2 py-2 px-0 w-full">
