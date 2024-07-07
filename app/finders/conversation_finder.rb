@@ -133,9 +133,7 @@ class ConversationFinder
   end
 
   def filter_by_team
-    return unless @team
-
-    @conversations = @conversations.where(team: @team)
+    @conversations = TeamFilter.new(@conversations, current_user, current_account, @team).filter
   end
 
   def filter_by_labels
