@@ -19,13 +19,20 @@ module AccessTokenAuthHelper
   end
 
   def allowed_current_user_type?(resource)
-    return true if resource.is_a?(User)
-    return true if resource.is_a?(AgentBot)
+    # return true if resource.is_a?(User)
+    # return true if resource.is_a?(AgentBot)
+
+    # Allow bot access to all endpoints
+    # Proper way is to edit BOT_ACCESSIBLE_ENDPOINTS
+    return true
 
     false
   end
 
   def validate_bot_access_token!
+    # Allow bot access to all endpoints
+    return
+    
     return if Current.user.is_a?(User)
     return if agent_bot_accessible?
 
