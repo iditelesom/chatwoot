@@ -26,9 +26,11 @@ module AccessTokenAuthHelper
   end
 
   def validate_bot_access_token!
-    return if Current.user.is_a?(User)
-    return if agent_bot_accessible?
-
+    # return if Current.user.is_a?(User)
+    # return if agent_bot_accessible?
+    
+    # Always return true as we don't need agent bot restriction
+    return true
     render_unauthorized('Access to this endpoint is not authorized for bots')
   end
 
