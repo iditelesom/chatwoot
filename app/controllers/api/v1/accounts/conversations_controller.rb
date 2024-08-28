@@ -91,6 +91,11 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     @conversation.status == 'open' && Current.user.is_a?(User) && Current.user&.agent?
   end
 
+  def patch_custom_attributes
+    custom_attributes = params.permit(custom_attributes: {})[:custom_attributes]
+    Current.account.conversations.where(id: @conversation.id).update_all("custom_attributes = custom_attributes || '#{custom_attributes.to_json}'::jsonb")
+  end
+
   def toggle_priority
     @conversation.toggle_priority(params[:priority])
     head :ok
