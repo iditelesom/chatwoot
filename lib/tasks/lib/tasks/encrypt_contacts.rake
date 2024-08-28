@@ -36,8 +36,8 @@ namespace :populate do
 
       contact.update!(
         name: "#{first_name} #{last_name}",
-        phone_number: phone_number,
-        email: email,
+      #  phone_number: phone_number,
+      #  email: email,
         additional_attributes: additional_attributes
       )
 
