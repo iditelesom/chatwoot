@@ -26,11 +26,8 @@ class SearchService
 
   def filter_conversations
     @conversations = current_account.conversations
-
-    if @current_user.current_account_user.role != 'administrator'
-      arel = @conversations.arel_table
-      @conversations = @conversations.where(arel[:team_id].not_in(excluded_team_ids).or(arel[:team_id].eq(nil)))
-    end
+    # Apply TeamFilter first to ensure private team filtering is consistent
+    @conversations = TeamFilter.new(@conversations, current_user, current_account).filter
 
     @conversations = @conversations.where(inbox_id: accessable_inbox_ids)
                                    .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
@@ -51,6 +48,8 @@ class SearchService
 
   def filter_messages_with_gin
     base_query = message_base_query
+    # Filter messages based on conversation team access
+    base_query = filter_messages_by_team(base_query)
 
     if search_query.present?
       # Use the @@ operator with to_tsquery for better GIN index utilization
@@ -75,11 +74,14 @@ class SearchService
   end
 
   def filter_messages_with_like
-    message_base_query
-      .where('messages.content ILIKE :search', search: "%#{search_query}%")
-      .reorder('created_at DESC')
-      .page(params[:page])
-      .per(15)
+    base_query = message_base_query
+    # Filter messages based on conversation team access
+    base_query = filter_messages_by_team(base_query)
+
+    base_query.where('messages.content ILIKE :search', search: "%#{search_query}%")
+              .reorder('created_at DESC')
+              .page(params[:page])
+              .per(15)
   end
 
   def message_base_query
@@ -87,13 +89,20 @@ class SearchService
                    .where('created_at >= ?', 3.months.ago)
   end
 
-  def use_gin_search
-    current_account.feature_enabled?('search_with_gin')
+  def filter_messages_by_team(query)
+    # Get conversations that user has access to based on team permissions
+    accessible_conversations = TeamFilter.new(
+      current_account.conversations,
+      current_user,
+      current_account
+    ).filter
+
+    # Only include messages from conversations user has access to
+    query.joins(:conversation).where(conversation: accessible_conversations)
   end
 
-  def excluded_team_ids
-    current_user_team_ids = @current_user.teams.pluck(:id)
-    Team.where(account_id: @current_account, private: true).pluck(:id) - current_user_team_ids
+  def use_gin_search
+    current_account.feature_enabled?('search_with_gin')
   end
 
   def filter_contacts
