@@ -3,7 +3,7 @@ class Conversations::FilterService < FilterService
 
   def initialize(params, user, filter_account = nil)
     @account = filter_account || Current.account
-    super(params, user)
+    super(params, user, @account)  # IDL: Pass @account to the parent, fix "Nil Account Causes Undefined Method Error in TeamFilter"
   end
 
   def perform
