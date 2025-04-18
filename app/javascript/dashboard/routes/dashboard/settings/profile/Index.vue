@@ -16,7 +16,8 @@ import ChangePassword from './ChangePassword.vue';
 import NotificationPreferences from './NotificationPreferences.vue';
 import AudioNotifications from './AudioNotifications.vue';
 import FormSection from 'dashboard/components/FormSection.vue';
-import AccessToken from './AccessToken.vue';
+// IDL: API Key access has been temporarily disabled in the UI
+// import AccessToken from './AccessToken.vue';
 import Policy from 'dashboard/components/policy.vue';
 import {
   ROLES,
@@ -35,7 +36,8 @@ export default {
     ChangePassword,
     NotificationPreferences,
     AudioNotifications,
-    AccessToken,
+    // IDL: API Key access has been temporarily disabled in the UI
+    // AccessToken,
   },
   mixins: [globalConfigMixin],
   setup() {
@@ -272,7 +274,13 @@ export default {
         <NotificationPreferences />
       </FormSection>
     </Policy>
-    <FormSection
+    
+    <!-- 
+      IDL: API Key section has been commented out to hide it from the UI
+      If you need to re-enable API key access in the future, uncomment this section
+      and the AccessToken import statement at the top of the file
+    -->
+    <!-- <FormSection
       :title="$t('PROFILE_SETTINGS.FORM.ACCESS_TOKEN.TITLE')"
       :description="
         useInstallationName(
@@ -282,6 +290,6 @@ export default {
       "
     >
       <AccessToken :value="currentUser.access_token" @on-copy="onCopyToken" />
-    </FormSection>
+    </FormSection> -->
   </div>
 </template>
