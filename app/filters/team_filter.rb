@@ -1,8 +1,8 @@
 class TeamFilter
-    def initialize(conversations, current_user, current_account, team=nil)
+    def initialize(conversations, current_user, team=nil)
       @conversations = conversations
       @current_user = current_user
-      @current_account = current_account
+      @current_account = Current.account
       @team = team
     end
   
@@ -17,7 +17,7 @@ class TeamFilter
     private
   
     def administrator?
-      @current_user.current_account_user.role == 'administrator'
+      @current_user&.current_account_user&.role == 'administrator'
     end
   
     def administrator_filter
