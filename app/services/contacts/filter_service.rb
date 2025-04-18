@@ -5,7 +5,7 @@ class Contacts::FilterService < FilterService
     @account = account
     # TODO: Change the order of arguments in FilterService maybe?
     # account, user, params makes more sense
-    super(params, user)
+    super(params, user, @account)
   end
 
   def perform

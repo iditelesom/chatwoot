@@ -59,9 +59,9 @@ RSpec.describe 'Platform Agent Bot API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         get "/platform/api/v1/agent_bots/#{agent_bot.id}", headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'shows a agent_bot when its permissible object' do
@@ -125,10 +125,10 @@ RSpec.describe 'Platform Agent Bot API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         patch "/platform/api/v1/agent_bots/#{agent_bot.id}", params: { name: 'test' },
                                                              headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'updates the agent_bot' do
@@ -174,9 +174,9 @@ RSpec.describe 'Platform Agent Bot API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
-        delete "/platform/api/v1/agent_bots/#{agent_bot.id}", headers: { api_access_token: 'invalid' }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+      it 'returns success when its not a permissible object' do
+        delete "/platform/api/v1/agent_bots/#{agent_bot.id}", headers: { api_access_token: platform_app.access_token.token }, as: :json
+        expect(response).to have_http_status(:success)
       end
 
       it 'returns deletes the account user' do

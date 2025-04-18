@@ -350,7 +350,7 @@ describe Telegram::IncomingMessageService do
         }.with_indifferent_access
         described_class.new(inbox: telegram_channel.inbox, params: params).perform
         expect(telegram_channel.inbox.conversations.count).not_to eq(0)
-        expect(Contact.all.first.name).to eq('Sojan Jose')
+        expect(Contact.all.first.name).to eq(name)
         expect(telegram_channel.inbox.messages.first.attachments.first.file_type).to eq('contact')
       end
     end

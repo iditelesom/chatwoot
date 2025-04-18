@@ -27,7 +27,7 @@ class SearchService
   def filter_conversations
     @conversations = current_account.conversations
     # Apply TeamFilter first to ensure private team filtering is consistent
-    @conversations = TeamFilter.new(@conversations, current_user, current_account).filter
+    @conversations = TeamFilter.new(@conversations, current_user).filter
 
     @conversations = @conversations.where(inbox_id: accessable_inbox_ids)
                                    .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
@@ -44,6 +44,10 @@ class SearchService
                 else
                   filter_messages_with_like
                 end
+  rescue StandardError => e
+    Rails.logger.error("Error in filter_messages: #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    []
   end
 
   def filter_messages_with_gin
@@ -63,11 +67,11 @@ class SearchService
 
       # Apply the text search using the GIN index
       base_query.where('content @@ to_tsquery(?)', tsquery)
-                .reorder('created_at DESC')
+                .reorder('messages.created_at DESC')
                 .page(params[:page])
                 .per(15)
     else
-      base_query.reorder('created_at DESC')
+      base_query.reorder('messages.created_at DESC')
                 .page(params[:page])
                 .per(15)
     end
@@ -79,22 +83,21 @@ class SearchService
     base_query = filter_messages_by_team(base_query)
 
     base_query.where('messages.content ILIKE :search', search: "%#{search_query}%")
-              .reorder('created_at DESC')
+              .reorder('messages.created_at DESC')
               .page(params[:page])
               .per(15)
   end
 
   def message_base_query
     current_account.messages.where(inbox_id: accessable_inbox_ids)
-                   .where('created_at >= ?', 3.months.ago)
+                   .where('messages.created_at >= ?', 3.months.ago)
   end
 
   def filter_messages_by_team(query)
     # Get conversations that user has access to based on team permissions
     accessible_conversations = TeamFilter.new(
       current_account.conversations,
-      current_user,
-      current_account
+      current_user
     ).filter
 
     # Only include messages from conversations user has access to

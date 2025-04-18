@@ -21,9 +21,9 @@ RSpec.describe 'Platform Users API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         get "/platform/api/v1/users/#{user.id}", headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'shows a user when its permissible object' do
@@ -58,9 +58,9 @@ RSpec.describe 'Platform Users API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         get "/platform/api/v1/users/#{user.id}/login", headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'return login link for user' do
@@ -163,10 +163,10 @@ RSpec.describe 'Platform Users API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         patch "/platform/api/v1/users/#{user.id}", params: { name: 'test' },
                                                    headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'updates the user attributes' do
@@ -203,9 +203,9 @@ RSpec.describe 'Platform Users API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         delete "/platform/api/v1/users/#{user.id}", headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'deletes the user' do

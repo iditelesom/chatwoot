@@ -39,8 +39,8 @@ class Conversations::FilterService < FilterService
       conversations = conversations.where(inbox_id: inbox_ids)
     end
 
-    # IDL: Apply team filtering
-    conversations = TeamFilter.new(conversations, @user, @account).filter
+    # IDL: Apply team filtering - now using Current.account in TeamFilter
+    conversations = TeamFilter.new(conversations, @user).filter
 
     # Apply permission-based filtering
     Conversations::PermissionFilterService.new(
