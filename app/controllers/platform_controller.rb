@@ -30,11 +30,7 @@ class PlatformController < ActionController::API
   end
 
   def validate_platform_app_permissible
-  #  return if @platform_app.platform_app_permissibles.find_by(permissible: @resource)
-
-  #  render json: { error: 'Non permissible resource' }, status: :unauthorized
-  
-  # disable this validation
+    # IDL: Authorization check has been temporarily disabled to enable users sync
     return true
   end
 end

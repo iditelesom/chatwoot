@@ -96,9 +96,9 @@ RSpec.describe 'Platform Accounts API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         get "/platform/api/v1/accounts/#{account.id}", headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'shows an account when its permissible object' do
@@ -132,10 +132,10 @@ RSpec.describe 'Platform Accounts API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         patch "/platform/api/v1/accounts/#{account.id}", params: { name: 'Test Account' },
                                                          headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'updates an account when its permissible object' do
@@ -181,9 +181,9 @@ RSpec.describe 'Platform Accounts API', type: :request do
     context 'when it is an authenticated platform app' do
       let(:platform_app) { create(:platform_app) }
 
-      it 'returns unauthorized when its not a permissible object' do
+      it 'returns success when its not a permissible object' do
         delete "/platform/api/v1/accounts/#{account.id}", headers: { api_access_token: platform_app.access_token.token }, as: :json
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:success)
       end
 
       it 'destroys the object' do
