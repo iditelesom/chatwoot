@@ -9,7 +9,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    env:
+      PRIMARY_KEY: ${{ secrets.CICD_PRIMARY_KEY }}
+      DETERMINISTIC_KEY: ${{ secrets.CICD_DETERMINISTIC_KEY }}
+      KEY_DERIVATION_SALT: ${{ secrets.CICD_KEY_DERIVATION_SALT }}
     services:
       postgres:
         image: pgvector/pgvector:pg15
