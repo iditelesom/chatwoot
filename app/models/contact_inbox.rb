@@ -28,6 +28,8 @@ class ContactInbox < ApplicationRecord
   validates :source_id, presence: true
   validate :valid_source_id_format?
 
+  encrypts :source_id, deterministic: true
+
   belongs_to :contact
   belongs_to :inbox
 

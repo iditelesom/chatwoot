@@ -3,7 +3,7 @@ class Conversations::FilterService < FilterService
 
   def initialize(params, user, filter_account = nil)
     @account = filter_account || Current.account
-    super(params, user)
+    super(params, user, @account)  # IDL: Pass @account to the parent, fix "Nil Account Causes Undefined Method Error in TeamFilter"
   end
 
   def perform
@@ -24,9 +24,10 @@ class Conversations::FilterService < FilterService
   end
 
   def base_relation
-    @account.conversations.includes(
+    conversations = @account.conversations.includes(
       :taggings, :inbox, { assignee: { avatar_attachment: [:blob] } }, { contact: { avatar_attachment: [:blob] } }, :team, :messages, :contact_inbox
     )
+    TeamFilter.new(conversations, @user, @account).filter
   end
 
   def current_page

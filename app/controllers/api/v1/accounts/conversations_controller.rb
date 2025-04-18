@@ -34,7 +34,10 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
                                 .per(ATTACHMENT_RESULTS_PER_PAGE)
   end
 
-  def show; end
+  def show
+    team_id = @conversation.team_id
+    raise Pundit::NotAuthorizedError if team_id.present? && Current.user.teams.pluck(:id).exclude?(team_id)
+  end
 
   def create
     ActiveRecord::Base.transaction do
@@ -48,7 +51,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def filter
-    result = ::Conversations::FilterService.new(params.permit!, current_user).perform
+    result = ::Conversations::FilterService.new(params.permit!, current_user, current_account).perform
     @conversations = result[:conversations]
     @conversations_count = result[:count]
   rescue CustomExceptions::CustomFilter::InvalidAttribute,
@@ -96,6 +99,11 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def should_assign_conversation?
     @conversation.status == 'open' && Current.user.is_a?(User) && Current.user&.agent?
+  end
+
+  def patch_custom_attributes
+    custom_attributes = params.permit(custom_attributes: {})[:custom_attributes]
+    Current.account.conversations.where(id: @conversation.id).update_all("custom_attributes = custom_attributes || '#{custom_attributes.to_json}'::jsonb")
   end
 
   def toggle_priority

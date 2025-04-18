@@ -1,7 +1,19 @@
 # Find the various telegram payload samples here: https://core.telegram.org/bots/webhooks#testing-your-bot-with-updates
 # https://core.telegram.org/bots/api#available-types
 
+module Faker
+  class PhoneNumber
+    def self.e164_phone_number(country_code: '+7')
+      phone_number = Faker::PhoneNumber.phone_number
+      national_number = phone_number.gsub(/\D/, '')
+      "#{country_code}#{national_number}"
+    end
+  end
+end
+
 class Telegram::IncomingMessageService
+  require 'digest/md5'
+
   include ::FileTypeHelper
   include ::Telegram::ParamHelpers
   pattr_initialize [:inbox!, :params!]
@@ -47,10 +59,7 @@ class Telegram::IncomingMessageService
   end
 
   def update_contact_avatar
-    return if @contact.avatar.attached?
-
-    avatar_url = inbox.channel.get_telegram_profile_image(telegram_params_from_id)
-    ::Avatar::AvatarFromUrlJob.perform_later(@contact, avatar_url) if avatar_url
+    # removed due to security reasons
   end
 
   def conversation_params
@@ -72,24 +81,64 @@ class Telegram::IncomingMessageService
 
   def contact_attributes
     {
-      name: "#{telegram_params_first_name} #{telegram_params_last_name}",
+      name: anonymize_name,
+      # Uncomment the following lines if you need to anonymize the contact's phone number and email
+      # phone_number: anonymize_phone,
+      # email: anonymize_email,
       additional_attributes: additional_attributes
     }
   end
 
   def additional_attributes
+    anonymized_username = anonymize_username
+
+    encryptor = DeterministicEncryptor.new
+
     {
       # TODO: Remove this once we show the social_telegram_user_name in the UI instead of the username
-      username: telegram_params_username,
+      username: anonymized_username,
       language_code: telegram_params_language_code,
-      social_telegram_user_id: telegram_params_from_id,
-      social_telegram_user_name: telegram_params_username
+      social_telegram_user_id: encryptor.encrypt(telegram_params_from_id.to_s),
+      social_telegram_user_name: anonymized_username
     }
   end
 
+  def anonymize_name
+    Faker::Config.locale = 'ru'
+    Faker::Config.random = Random.new(Digest::MD5.hexdigest(telegram_params_from_id.to_s).to_i(16))
+
+    first_name = Faker::Name.male_first_name
+    last_name = Faker::Name.male_last_name
+
+    "#{first_name} #{last_name}"
+  end
+
+  def anonymize_username
+    Faker::Config.locale = 'ru'
+    Faker::Config.random = Random.new(Digest::MD5.hexdigest(telegram_params_from_id.to_s).to_i(16))
+
+    Faker::Internet.username
+  end
+
+  def anonymize_email
+    Faker::Config.locale = 'ru'
+    Faker::Config.random = Random.new(Digest::MD5.hexdigest(telegram_params_from_id.to_s).to_i(16))
+
+    Faker::Internet.email
+  end
+
+  def anonymize_phone
+    Faker::Config.locale = 'ru'
+    Faker::Config.random = Random.new(Digest::MD5.hexdigest(telegram_params_from_id.to_s).to_i(16))
+
+    Faker::PhoneNumber.e164_phone_number
+  end
+
   def conversation_additional_attributes
+    encryptor = DeterministicEncryptor.new
+
     {
-      chat_id: telegram_params_chat_id
+      chat_id: encryptor.encrypt(telegram_params_chat_id.to_s)
     }
   end
 

@@ -120,6 +120,7 @@ Rails.application.routes.draw do
               get :attachments
               post :copilot
               get :inbox_assistant
+              patch :custom_attributes, to: 'conversations#patch_custom_attributes'
             end
           end
 

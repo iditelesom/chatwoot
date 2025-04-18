@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_REPO: chatwoot/chatwoot
+  DOCKER_REPO: iditelesom/chatwoot
 
 jobs:
   build:
@@ -53,9 +53,9 @@ jobs:
         run: |
           SANITIZED_REF=$(echo "$GIT_REF" | sed 's/\//-/g')
           if [ "${{ github.ref_name }}" = "master" ]; then
-            echo "DOCKER_TAG=${DOCKER_REPO}:latest-ce" >> $GITHUB_ENV
+            echo "DOCKER_TAG=${DOCKER_REPO}:latest" >> $GITHUB_ENV
           else
-            echo "DOCKER_TAG=${DOCKER_REPO}:${SANITIZED_REF}-ce" >> $GITHUB_ENV
+            echo "DOCKER_TAG=${DOCKER_REPO}:${SANITIZED_REF}" >> $GITHUB_ENV
           fi
 
       - name: Set up QEMU
@@ -123,11 +123,11 @@ jobs:
         run: |
           SANITIZED_REF=$(echo "$GIT_REF" | sed 's/\//-/g')
           if [ "${{ github.ref_name }}" = "master" ]; then
-            TAG="${DOCKER_REPO}:latest-ce"
+            TAG="${DOCKER_REPO}:latest"
           else
-            TAG="${DOCKER_REPO}:${SANITIZED_REF}-ce"
+            TAG="${DOCKER_REPO}:${SANITIZED_REF}"
           fi
-          
+
           docker buildx imagetools create -t $TAG \
             $(printf '${{ env.DOCKER_REPO }}@sha256:%s ' *)
 
@@ -137,9 +137,9 @@ jobs:
         run: |
           SANITIZED_REF=$(echo "$GIT_REF" | sed 's/\//-/g')
           if [ "${{ github.ref_name }}" = "master" ]; then
-            TAG="${DOCKER_REPO}:latest-ce"
+            TAG="${DOCKER_REPO}:latest"
           else
-            TAG="${DOCKER_REPO}:${SANITIZED_REF}-ce"
+            TAG="${DOCKER_REPO}:${SANITIZED_REF}"
           fi
-          
+
           docker buildx imagetools inspect $TAG

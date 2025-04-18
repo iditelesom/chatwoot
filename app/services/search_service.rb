@@ -25,13 +25,17 @@ class SearchService
   end
 
   def filter_conversations
-    @conversations = current_account.conversations.where(inbox_id: accessable_inbox_ids)
-                                    .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
-                                    .where("cast(conversations.display_id as text) ILIKE :search OR contacts.name ILIKE :search OR contacts.email
+    @conversations = current_account.conversations
+    # Apply TeamFilter first to ensure private team filtering is consistent
+    @conversations = TeamFilter.new(@conversations, current_user, current_account).filter
+
+    @conversations = @conversations.where(inbox_id: accessable_inbox_ids)
+                                   .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
+                                   .where("cast(conversations.display_id as text) ILIKE :search OR contacts.name ILIKE :search OR contacts.email
                             ILIKE :search OR contacts.phone_number ILIKE :search OR contacts.identifier ILIKE :search", search: "%#{search_query}%")
-                                    .order('conversations.created_at DESC')
-                                    .page(params[:page])
-                                    .per(15)
+                                   .order('conversations.created_at DESC')
+                                   .page(params[:page])
+                                   .per(15)
   end
 
   def filter_messages
@@ -44,6 +48,8 @@ class SearchService
 
   def filter_messages_with_gin
     base_query = message_base_query
+    # Filter messages based on conversation team access
+    base_query = filter_messages_by_team(base_query)
 
     if search_query.present?
       # Use the @@ operator with to_tsquery for better GIN index utilization
@@ -68,16 +74,31 @@ class SearchService
   end
 
   def filter_messages_with_like
-    message_base_query
-      .where('messages.content ILIKE :search', search: "%#{search_query}%")
-      .reorder('created_at DESC')
-      .page(params[:page])
-      .per(15)
+    base_query = message_base_query
+    # Filter messages based on conversation team access
+    base_query = filter_messages_by_team(base_query)
+
+    base_query.where('messages.content ILIKE :search', search: "%#{search_query}%")
+              .reorder('created_at DESC')
+              .page(params[:page])
+              .per(15)
   end
 
   def message_base_query
     current_account.messages.where(inbox_id: accessable_inbox_ids)
                    .where('created_at >= ?', 3.months.ago)
+  end
+
+  def filter_messages_by_team(query)
+    # Get conversations that user has access to based on team permissions
+    accessible_conversations = TeamFilter.new(
+      current_account.conversations,
+      current_user,
+      current_account
+    ).filter
+
+    # Only include messages from conversations user has access to
+    query.joins(:conversation).where(conversation: accessible_conversations)
   end
 
   def use_gin_search
